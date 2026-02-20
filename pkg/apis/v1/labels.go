@@ -133,7 +133,37 @@ var (
 		v1.LabelInstanceType:            v1.LabelInstanceTypeStable,
 		v1.LabelFailureDomainBetaRegion: v1.LabelTopologyRegion,
 	}
+
+	NormalizedLabelsAndValues = map[string]NormalizedLabel{}
 )
+
+type NormalizedLabel struct {
+	Key              string
+	NormalizedValues map[string]string
+}
+
+func NormalizeLabel(key string, values []string) (string, []string) {
+	// If only the key is normalized, return the normalized key with the original values
+	if normalizedKey, ok := NormalizedLabels[key]; ok {
+		return normalizedKey, values
+	}
+
+	// If the key and values are normalized, return the normalized key and values
+	if normalized, ok := NormalizedLabelsAndValues[key]; ok {
+		normalizedValues := make([]string, len(values))
+		for i, value := range values {
+			if normalizedValue, ok := normalized.NormalizedValues[value]; ok {
+				normalizedValues[i] = normalizedValue
+			} else {
+				normalizedValues[i] = value
+			}
+		}
+		return normalized.Key, normalizedValues
+	}
+
+	// Otherwise, return the original key and values
+	return key, values
+}
 
 // IsRestrictedLabel returns an error if the label is restricted.
 func IsRestrictedLabel(key string) error {

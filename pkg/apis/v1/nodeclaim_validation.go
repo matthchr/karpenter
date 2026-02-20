@@ -114,9 +114,10 @@ func (in *NodeClaimTemplateSpec) validateRequirements(ctx context.Context) (errs
 
 func ValidateRequirement(ctx context.Context, requirement NodeSelectorRequirementWithMinValues) error { //nolint:gocyclo
 	var errs error
-	if normalized, ok := NormalizedLabels[requirement.Key]; ok {
-		requirement.Key = normalized
-	}
+	requirement.Key, requirement.Values = NormalizeLabel(requirement.Key, requirement.Values)
+	// if normalized, ok := NormalizedLabels[requirement.Key]; ok {
+	// 	requirement.Key = normalized
+	// }
 	if !SupportedNodeSelectorOps.Has(string(requirement.Operator)) {
 		errs = multierr.Append(errs, fmt.Errorf("key %s has an unsupported operator %s not in %s", requirement.Key, requirement.Operator, SupportedNodeSelectorOps.UnsortedList()))
 	}
